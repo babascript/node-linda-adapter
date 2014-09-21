@@ -4,16 +4,16 @@ Linda = window.Linda if window?
 async = require 'async'
 
 module.exports = class LindaAdapter
-  constructor: (@api = 'http://linda.babascript.org') ->
-    @member = []
+  constructor: (api) ->
+    @api = api or 'http://babascript-linda.herokuapp.com/'
       
   attach: (@baba) ->
     socket = SocketIOClient.connect @api, {'force new connection': true}
     @linda = new Linda().connect socket
     @message = @linda.tuplespace @baba.id
     @membership = @linda.tuplespace 'membership'
-    if @linda.io.socket.open
-      @baba.emit "connect"
+    if @linda.io.connected
+      @baba.emit 'connect'
     else
       @linda.io.on 'connect', =>
         @baba.emit 'connect'
