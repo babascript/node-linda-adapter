@@ -1,21 +1,21 @@
-# nodeinit
+# Babascript LindaAdapter 
 
-![](https://travis-ci.org/geta6/nodeinit.png?branch=master)
+LindaAdapter is default communication adapter for Babascript.
 
-node_moduleを開発し始めるためのベース
+## usage
+    
+    Babascript = require 'babascript'
+    Client     = require 'babascript-client'
+    LindaAdapter = require 'linda-adapter'
 
-# usage
+    adapter = new LindaAdapter(address)
+    baba = new Babascript "baba"
+    baba.attach adapter
 
-    $ git clone https://github.com/geta6/nodeinit
-    $ cd nodeinit
-    $ npm i -g grunt-cli
-    $ npm i
-    $ grunt
+    client = new Client "baba"
+    client.attach adapter
 
-# tasks
+## TODO
 
-* lint coffee
-* build coffee (`src` to `lib`, recursive)
-* mocha test (`tests/test.coffee`)
-* watching file changes
-* failure notification
+- write test code
+- debug
