@@ -3,8 +3,6 @@ process.env.NODE_ENV = 'test'
 path = require 'path'
 assert = require 'assert'
 LindaAdapter = require '../lib/index'
-Script = require 'babascript'
-Client = require 'babascript-client'
 
 describe 'adapter', ->
 
