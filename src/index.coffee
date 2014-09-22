@@ -11,7 +11,6 @@ module.exports = class LindaAdapter
     socket = SocketIOClient.connect @api, {'force new connection': true}
     @linda = new Linda().connect socket
     @message = @linda.tuplespace @baba.id
-    @membership = @linda.tuplespace 'membership'
     if @linda.io.connected
       @baba.emit 'connect'
     else
