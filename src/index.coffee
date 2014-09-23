@@ -6,6 +6,7 @@ async = require 'async'
 module.exports = class LindaAdapter
   constructor: (api) ->
     @api = api or 'http://babascript-linda.herokuapp.com/'
+    @functions = {}
       
   attach: (@baba) ->
     socket = SocketIOClient.connect @api, {'force new connection': true}
@@ -26,16 +27,17 @@ module.exports = class LindaAdapter
       baba: tuple.baba
       cid: cid
       type: 'return'
+    @functions[cid] = []
     if tuple.type is 'broadcast'
-      functions = []
       cs = []
       for i in [0..tuple.count]
-        functions.push (c) =>
+        @functions[cid].push (c) =>
           cs.push c
           @message.take t, (err, tuple) ->
             cs.shift()(null, tuple)
-      async.parallel functions, callback
+      async.parallel @functions[cid], callback
     else
+      @functions[cid].push callback
       @message.take t, callback
 
   clientReceive: (tuple, callback) ->
@@ -46,7 +48,11 @@ module.exports = class LindaAdapter
 
   cancel: (cid, reason) ->
     tuple =
+      baba: 'script'
       cid: cid
       type: 'cancel'
       reason: reason
     @message.write tuple
+    for i in [0..@functions[cid].length-1]
+      func = @functions[cid].shift()
+      func null, {data: tuple}
