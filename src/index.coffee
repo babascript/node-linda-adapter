@@ -6,7 +6,7 @@ Linda = window.Linda if window?
 async = require 'async'
 
 module.exports = class LindaAdapter
-  constructor: (api, @options) ->
+  constructor: (api, @options = {}) ->
     @api = api or 'http://babascript-linda.herokuapp.com'
     @functions = {}
       
@@ -20,7 +20,7 @@ module.exports = class LindaAdapter
         @baba.emit 'connect'
 
   connect: ->
-    port = @options.port or 80
+    port = @options.port or process.env.PORT or 80
     socket = SocketIOClient.connect @api+":#{port}",
       'force new connection': true
     @linda = new Linda().connect socket

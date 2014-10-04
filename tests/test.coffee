@@ -6,18 +6,16 @@ LindaAdapter = require '../lib/index'
 
 describe 'adapter', ->
 
-  script = require path.resolve()
-
-  before (done) ->
-    app = require('http').createServer (req, res) ->
+  before (done) =>
+    @app = require('http').createServer (req, res) ->
       _url = require('url').parse(decodeURI(req.url), true)
       if _url.pathname is '/'
         res.writeHead 200
         res.end 'linda test server'
     port = process.env.PORT or 8931
-    app.listen port
-    io = require('socket.io').listen app
-    linda  = require('linda').Server.listen {io: io, server: app}
+    @app.listen port
+    @io = require('socket.io').listen @app
+    linda  = require('linda').Server.listen {io: @io, server: @app}
     done()
 
   it 'should be LindaAdapter class instance', (done) ->
@@ -26,10 +24,12 @@ describe 'adapter', ->
     done()
 
   it 'should api equal argument', (done) ->
-    api = 'http://linda.babascript.org'
+    api = 'http://babascript-linda.herokuapp.com'
     adapter = new LindaAdapter api
+    adapter.connect()
     assert.equal adapter.api, api
-    done()
+    adapter.linda.io.on "connect", ->
+      done()
 
   it 'should connect linda-server assigned port', (done) ->
     api = 'http://localhost'
