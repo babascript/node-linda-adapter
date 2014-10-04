@@ -8,6 +8,18 @@ describe 'adapter', ->
 
   script = require path.resolve()
 
+  before (done) ->
+    app = require('http').createServer (req, res) ->
+      _url = require('url').parse(decodeURI(req.url), true)
+      if _url.pathname is '/'
+        res.writeHead 200
+        res.end 'linda test server'
+    port = process.env.PORT or 8931
+    app.listen port
+    io = require('socket.io').listen app
+    linda  = require('linda').Server.listen {io: io, server: app}
+    done()
+
   it 'should be LindaAdapter class instance', (done) ->
     adapter = new LindaAdapter()
     assert.ok adapter instanceof LindaAdapter
