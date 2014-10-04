@@ -18,3 +18,11 @@ describe 'adapter', ->
     adapter = new LindaAdapter api
     assert.equal adapter.api, api
     done()
+
+  it 'should connect linda-server assigned port', (done) ->
+    api = 'http://localhost'
+    port = 8931
+    adapter = new LindaAdapter api, {port: port}
+    adapter.connect()
+    adapter.linda.io.on 'connect', ->
+      done()
