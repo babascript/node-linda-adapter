@@ -9,7 +9,7 @@ module.exports = class LindaAdapter
   constructor: (api, @options = {}) ->
     @api = api or 'http://babascript-linda.herokuapp.com'
     @functions = {}
-      
+
   attach: (@baba) ->
     @connect()
     @message = @linda.tuplespace @baba.id
@@ -53,7 +53,7 @@ module.exports = class LindaAdapter
     if tuple.type is 'broadcast' or tuple.type is 'cancel'
       @message.watch tuple, callback
     else
-      @message.take tuple, (err, tuple) ->
+      @message.option(sort: 'queue').take tuple, (err, tuple) ->
         callback err, tuple
 
   cancel: (cid, reason) ->
