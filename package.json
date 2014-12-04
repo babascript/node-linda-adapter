@@ -2,7 +2,7 @@
   "name": "babascript-linda-adapter",
   "version": "0.1.4",
   "description": "babascript adapter for use with linda",
-  "main": "lib/index.js",
+  "main": "lib/adapter.js",
   "scripts": {
     "test": "grunt test"
   },
@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^0.9.0",
-    "linda": "^1.1.6",
+    "linda": "^1.2.1",
     "socket.io-client": "^1.1.0"
   },
   "devDependencies": {
