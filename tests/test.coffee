@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test'
 
 path = require 'path'
 assert = require 'assert'
-LindaAdapter = require '../lib/index'
+LindaAdapter = require '../lib/adapter'
 
 describe 'adapter', ->
 
@@ -37,4 +37,12 @@ describe 'adapter', ->
     adapter = new LindaAdapter api, {port: port}
     adapter.connect()
     adapter.linda.io.on 'connect', ->
+      done()
+
+  it 'should disconnect', (done) ->
+    adapter = new LindaAdapter()
+    adapter.connect()
+    adapter.linda.io.on 'connect', ->
+      adapter.disconnect()
+    adapter.linda.io.on 'disconnect', ->
       done()

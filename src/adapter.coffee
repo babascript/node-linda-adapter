@@ -25,6 +25,9 @@ module.exports = class LindaAdapter
       'force new connection': true
     @linda = new Linda().connect socket
 
+  disconnect: ->
+    @linda.io.disconnect()
+
   send: (data) ->
     return @message.write data
 
