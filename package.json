@@ -1,6 +1,6 @@
 {
   "name": "babascript-linda-adapter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "babascript adapter for use with linda",
   "main": "lib/adapter.js",
   "scripts": {
