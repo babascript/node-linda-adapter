@@ -6,13 +6,18 @@ Linda = window.Linda if window?
 async = require 'async'
 
 module.exports = class LindaAdapter
+  @DEFAULT =
+    address: 'http://babascript-linda.herokuapp.com'
+
   constructor: (api, @options = {}) ->
-    @api = api or 'http://babascript-linda.herokuapp.com'
+    @api = api or LindaAdapter.DEFAULT.address
     @functions = {}
 
   attach: (@baba) ->
     @connect()
-    @message = @linda.tuplespace @baba.id
+    @result_queue    = @linda.tuplespace "#{@baba.id}_result_queue"
+    @normal_queue    = @linda.tuplespace "#{@baba.id}_normal_queue"
+    @interrupt_queue = @linda.tuplespace "#{@baba.id}_interrupt_queue"
     if @linda.io.connected
       @baba.emit 'connect'
     else
@@ -29,12 +34,19 @@ module.exports = class LindaAdapter
     @linda.io.disconnect()
 
   send: (data) ->
-    return @message.write data
+    # console.log data
+    if data.type is 'return'
+      @result_queue.write data
+    else if data.options?.interrupt?
+      data.type = 'interrupt'
+      @interrupt_queue.write data
+    else
+      @normal_queue.write data
 
   receive: (tuple, callback) ->
     cid = tuple.cid
     t =
-      baba: tuple.baba
+      baba: 'script'
       cid: cid
       type: 'return'
     @functions[cid] = []
@@ -43,21 +55,39 @@ module.exports = class LindaAdapter
       for i in [0..tuple.count]
         @functions[cid].push (c) =>
           cs.push c
-          @message.take t, (err, tuple) ->
-            cs.shift()(null, tuple)
-      async.parallel @functions[cid], (err, results) ->
+          @result_queue.take t, (err, tuple) ->
+            func = cs.shift()
+            func(null, tuple)
+      async.parallel @functions[cid], (err, results) =>
         callback err, results
+        @functions[cid] = null
     else
       @functions[cid].push callback
-      @message.take t, (err, tuple) ->
+      @result_queue.take t, (err, tuple) ->
         callback err, tuple
 
   clientReceive: (tuple, callback) ->
-    if tuple.type is 'broadcast' or tuple.type is 'cancel'
-      @message.watch tuple, callback
-    else
-      @message.option(sort: 'queue').take tuple, (err, tuple) ->
-        callback err, tuple
+    return switch tuple.type
+      when 'eval'
+        return @normal_queue.option(sort: 'queue').take tuple, callback
+      when 'broadcast', 'cancel'
+        return @normal_queue.watch tuple, callback
+      when 'interrupt'
+        return @interrupt_queue.option(sort: 'queue')
+        .take tuple, (err, tuple) ->
+          callback err, tuple
+      else
+        return null
+
+  stream: (callback) ->
+    @normal_queue.option(sort: 'queue')
+    .read {type: 'eval'}, (err, data) =>
+      @normal_queue.watch {type: 'eval'}, callback
+      callback err, data
+    @interrupt_queue.option(sort: 'queue')
+    .read {type: 'interrupt'}, (err, data) =>
+      @interrupt_queue.watch {type: 'interrupt'}, callback
+      callback err, data
 
   cancel: (cid, reason) ->
     tuple =
@@ -65,7 +95,7 @@ module.exports = class LindaAdapter
       cid: cid
       type: 'cancel'
       reason: reason
-    @message.write tuple
-    for i in [0..@functions[cid].length - 1]
-      func = @functions[cid].shift()
-      func null, {data: tuple}
+    @normal_queue.write tuple
+    # for i in [0..@functions[cid].length - 1]
+    #   func = @functions[cid].shift()
+    #   func null, {data: tuple}

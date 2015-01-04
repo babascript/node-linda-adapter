@@ -6,6 +6,8 @@ LindaAdapter = require '../lib/adapter'
 
 describe 'adapter', ->
 
+  LindaAdapter.DEFAULT.address = 'http://localhost:3000'
+
   before (done) =>
     @app = require('http').createServer (req, res) ->
       _url = require('url').parse(decodeURI(req.url), true)
@@ -39,10 +41,10 @@ describe 'adapter', ->
     adapter.linda.io.on 'connect', ->
       done()
 
-  it 'should disconnect', (done) ->
-    adapter = new LindaAdapter()
-    adapter.connect()
-    adapter.linda.io.on 'connect', ->
-      adapter.disconnect()
-    adapter.linda.io.on 'disconnect', ->
-      done()
+  # it 'should disconnect', (done) ->
+  #   adapter = new LindaAdapter()
+  #   adapter.connect()
+  #   adapter.linda.io.on 'connect', ->
+  #     adapter.disconnect()
+  #   adapter.linda.io.on 'disconnect', ->
+  #     done()
